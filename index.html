@@ -25,6 +25,7 @@ input[type=text]{width:100%;padding:12px 14px;font-size:16px;border:1px solid va
 .opt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;cursor:pointer;transition:.15s}
 .opt:hover{border-color:var(--teal);background:#f7fbfb}
 .opt input{margin-top:5px}
+.type{display:inline-block;margin-left:8px;font-size:12px;font-weight:700;border-radius:6px;padding:1px 8px;background:#fbeadd;color:var(--orange)}
 .opt.right{border-color:var(--ok);background:#eef9f3}
 .opt.wrong{border-color:var(--bad);background:#fdf1ee}
 button{appearance:none;border:0;border-radius:12px;padding:14px 26px;font-size:17px;font-weight:700;color:#fff;background:linear-gradient(90deg,var(--teal),var(--navy));cursor:pointer;box-shadow:0 8px 20px rgba(10,138,148,.3)}
@@ -43,14 +44,14 @@ footer{margin-top:26px;text-align:center;color:var(--muted);font-size:13px}
 <div class="wrap">
 <header>
   <h1>AWB 实战测验</h1>
-  <p>10 道单选题，每题 10 分，满分 100 分。覆盖 11 月 P4P 促销、Accio Work 核心能力、FDE 交付。</p>
-  <div class="tags"><span class="tag">P4P 促销 · 3 题</span><span class="tag">Accio Work · 5 题</span><span class="tag">FDE 交付 · 2 题</span><span class="tag">提交后即时判分</span></div>
+  <p>共 15 题（单选 11、多选 3、判断 1），按答对题数折算百分制；多选题须全部选对才得分。</p>
+  <div class="tags"><span class="tag">P4P 促销 · 3 题</span><span class="tag">Accio Work · 5 题</span><span class="tag">FDE 交付 · 2 题</span><span class="tag">推工厂 / 直通车 · 5 题</span><span class="tag">提交后即时判分</span></div>
 </header>
 
 <form id="quiz" class="card" autocomplete="off">
   <label class="field" for="name">姓名（必填，将写入成绩码）</label>
   <input type="text" id="name" maxlength="20" placeholder="请输入真实姓名">
-  <p class="hint">选项顺序每人随机；提交后请把成绩码复制发到指定群。</p>
+  <p class="hint">选项顺序每人随机；多选题请勾选全部正确项。提交后请把成绩码复制发到指定群。</p>
   <div id="questions"></div>
   <div class="warn" id="warn"></div>
   <div class="row"><button type="submit" id="submit">提交并查看成绩</button></div>
@@ -79,18 +80,24 @@ const Q=[
 {t:"材料所述的 AI 业务员/客户运营场景，下列哪项表述正确？",o:["只能在工作日白天处理询盘，无法设置转人工条件","只负责绘制商品图片，不参与客户接待","可支持全天候接待，并由商家设定接待范围、话术和转人工条件","必须取消人工辅助，完全交由 AI 独立处理"]},
 {t:"Accio Work 企业版所说“从散装 AI 到集体大脑”，最符合材料的具体做法是什么？",o:["把经验封装为智能体/Skills 在团队共享，并沉淀企业知识与组织记忆","将所有成员的经验保留在各自的私人聊天记录中，不做共享","只新增个人模型配额，不建立团队协作机制","停止收集企业业务知识，完全依赖外部通用问答"]},
 {t:"按材料中的 30 天 FDE 交付旅程，以下哪项阶段顺序正确？",o:["先上线培训 → 再初评价值 → 最后建设知识库 → 结项","先判断价值 → 构建能力 → 上线用好 → 持续运营","先投放广告 → 直接收取订单 → 再建立客户画像 → 停止运营","第 0 天交付全部智能体，第 1 天开始售后，不再做测评"]},
-{t:"在 FDE 材料中，关于 AI 专员从建设到部署的流程，哪项正确？",o:["第 1 天未经需求访谈就统一部署所有账号","先现场安装，第 20 天才首次创建智能体","AI 专员只需生成演示视频，无需测评或培训","按确认方案创建并测评 AI 专员，达到可交付标准后再部署并开展业务使用培训"]}
+{t:"在 FDE 材料中，关于 AI 专员从建设到部署的流程，哪项正确？",o:["第 1 天未经需求访谈就统一部署所有账号","先现场安装，第 20 天才首次创建智能体","AI 专员只需生成演示视频，无需测评或培训","按确认方案创建并测评 AI 专员，达到可交付标准后再部署并开展业务使用培训"]},
+{t:"以下哪些是推工厂的流量端口？",m:1,o:["找工厂双端频道","品商混搜","AI search","AI mode","Accio Work"]},
+{t:"玩转 L3+ 买家溢价需要做好的事项是哪几个？",m:1,o:["做业务复盘","找确定性的品","找确定性的国家","找确定性的国家"]},
+{t:"推工厂计划的优势有哪些？",m:1,o:["锁定高浓度 B 类买家","专属找商流量通道高效匹配","极简操作降低商机成本","无需选品直接推广定制产线"]},
+{t:"推工厂适配什么类型的客户？",o:["出口通","金品","金品贸易型","金品工厂型","金品工贸一体型","金品工厂或工贸一体"]},
+{t:"相同行业的两个商家，A 商家的直通车商机成本为 100，B 商家的直通车商机成本为 50，那么 B 商家的直通车效果一定比 A 商家好。",j:1,o:["正确","错误"]}
+
 ];
-const SALT="awb-1028";
-const KEYS=["9dfb1b45","f6f7d5c9","ccf55514","a5f2d918","02f12ce8","dbeeb0ec","b4ec34f0","92e9c0d3","ce0eee8d","aa0c774a"];
+const SALT="awb-1028-v2";
+const KEYS=["2e4b2bf8","354d7594","a045cf40","3248f3ad","b941796d","a04390a9","303c2494","313e64be","1e378b10","2e39e2d7","ecf306e3","baf07996","b0f7259d","fbf55d17","18e8becb"];
+const ALPH="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_";
+const LET="ABCDEF";
 function fnv(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0}return h.toString(16).padStart(8,"0")}
-const LET="ABCD";
-let order=[];
-function render(){const box=document.getElementById("questions");Q.forEach((q,i)=>{const idx=[0,1,2,3].sort(()=>Math.random()-.5);order.push(idx);const d=document.createElement("div");d.className="q";d.innerHTML=`<span class="num">第 ${i+1} 题</span><h3>${q.t}</h3>`+idx.map((oi,k)=>`<label class="opt"><input type="radio" name="q${i}" value="${LET[oi]}"><span><b>${LET[k]}.</b> ${q.o[oi]}</span></label>`).join("");box.appendChild(d)})}
+function render(){const box=document.getElementById("questions");Q.forEach((q,i)=>{const idx=q.o.map((_,k)=>k);if(!q.j)idx.sort(()=>Math.random()-.5);const type=q.j?"判断":(q.m?"多选":"单选");const inp=q.m?"checkbox":"radio";const d=document.createElement("div");d.className="q";d.innerHTML=`<span class="num">第 ${i+1} 题</span><span class="type">${type}</span><h3>${q.t}</h3>`+idx.map((oi,k)=>`<label class="opt"><input type="${inp}" name="q${i}" value="${oi}"><span><b>${LET[k]}.</b> ${q.o[oi]}</span></label>`).join("");box.appendChild(d)})}
 render();
-function check(ans,score){let s=score;for(let i=0;i<10;i++)s+=(ans.charCodeAt(i)-64)*(i+3);return s%97}
+function check(ans,score){let s=score;for(let i=0;i<ans.length;i++)s+=(ALPH.indexOf(ans[i])+1)*(i+3);return s%97}
 function nameTag(n){let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))%1000;return String(h).padStart(3,"0")}
-document.getElementById("quiz").addEventListener("submit",e=>{e.preventDefault();const warn=document.getElementById("warn");const name=document.getElementById("name").value.trim();if(!name){warn.textContent="请先填写姓名。";return}const ans=[];for(let i=0;i<10;i++){const c=document.querySelector(`input[name=q${i}]:checked`);if(!c){warn.textContent=`第 ${i+1} 题尚未作答。`;document.querySelector(`input[name=q${i}]`).closest(".q").scrollIntoView({behavior:"smooth"});return}ans.push(c.value)}warn.textContent="";let score=0;ans.forEach((a,i)=>{const ok=fnv(SALT+i+a)===KEYS[i];if(ok)score+=10;document.querySelectorAll(`input[name=q${i}]`).forEach(r=>{r.disabled=true;if(r.checked)r.closest(".opt").classList.add(ok?"right":"wrong")})});document.getElementById("submit").disabled=true;const a=ans.join("");const code=`AWB-${String(score).padStart(3,"0")}-${a}-${String(check(a,score)).padStart(2,"0")}-${nameTag(name)}`;document.getElementById("scoreNum").textContent=score;document.getElementById("summary").textContent=`${name}，答对 ${score/10} 题。绿色为答对，红色为答错；正确答案由主持人统一讲解。`;document.getElementById("code").textContent=code;document.getElementById("result").style.display="block";document.getElementById("result").scrollIntoView({behavior:"smooth"})});
+document.getElementById("quiz").addEventListener("submit",e=>{e.preventDefault();const warn=document.getElementById("warn");const name=document.getElementById("name").value.trim();if(!name){warn.textContent="请先填写姓名。";return}const ans=[];for(let i=0;i<Q.length;i++){const picked=[...document.querySelectorAll(`input[name=q${i}]:checked`)];if(!picked.length){warn.textContent=`第 ${i+1} 题尚未作答。`;document.querySelector(`input[name=q${i}]`).closest(".q").scrollIntoView({behavior:"smooth"});return}const mask=picked.reduce((m,r)=>m|(1<<Number(r.value)),0);ans.push(ALPH[mask])}warn.textContent="";let right=0;ans.forEach((a,i)=>{const ok=fnv(SALT+i+a)===KEYS[i];if(ok)right++;const q=document.querySelectorAll(`input[name=q${i}]`)[0].closest(".q");q.querySelectorAll("input").forEach(r=>{r.disabled=true;if(r.checked)r.closest(".opt").classList.add(ok?"right":"wrong")})});document.getElementById("submit").disabled=true;const score=Math.round(right*100/Q.length);const a=ans.join("");const code=`AWB2-${String(score).padStart(3,"0")}-${a}-${String(check(a,score)).padStart(2,"0")}-${nameTag(name)}`;document.getElementById("scoreNum").textContent=score;document.getElementById("summary").textContent=`${name}，答对 ${right} / ${Q.length} 题。绿色为答对，红色为答错；正确答案由主持人统一讲解。`;document.getElementById("code").textContent=code;document.getElementById("result").style.display="block";document.getElementById("result").scrollIntoView({behavior:"smooth"})});
 document.getElementById("copy").addEventListener("click",async()=>{const t=document.getElementById("code").textContent;try{await navigator.clipboard.writeText(t);document.getElementById("copied").textContent="已复制"}catch(_){document.getElementById("copied").textContent="请长按手动复制"}});
 </script>
 </body>
