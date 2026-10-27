@@ -38,6 +38,7 @@ button:disabled{opacity:.55;cursor:not-allowed;box-shadow:none}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
 .ghost{background:#fff;color:var(--navy);border:1px solid var(--line);box-shadow:none}
 footer{margin-top:26px;text-align:center;color:var(--muted);font-size:13px}
+.sync{margin-top:12px;padding:10px 12px;border-radius:10px;font-size:14px;background:#eef3f6;color:#4a5a68}.sync.ok{background:#e6f5ee;color:#1a7a50;font-weight:600}.sync.bad{background:#fbece8;color:#b23e28}.sync .ghost{margin-left:6px;padding:4px 10px}
 </style>
 </head>
 <body>
@@ -49,9 +50,9 @@ footer{margin-top:26px;text-align:center;color:var(--muted);font-size:13px}
 </header>
 
 <form id="quiz" class="card" autocomplete="off">
-  <label class="field" for="name">姓名（必填，将写入成绩码）</label>
+  <label class="field" for="name">姓名（必填，用于成绩统计）</label>
   <input type="text" id="name" maxlength="20" placeholder="请输入真实姓名">
-  <p class="hint">选项顺序每人随机；多选题请勾选全部正确项。提交后请把成绩码复制发到指定群。</p>
+  <p class="hint">选项顺序每人随机；多选题请勾选全部正确项。交卷后成绩自动提交给主持人。</p>
   <div id="questions"></div>
   <div class="warn" id="warn"></div>
   <div class="row"><button type="submit" id="submit">提交并查看成绩</button></div>
@@ -61,12 +62,13 @@ footer{margin-top:26px;text-align:center;color:var(--muted);font-size:13px}
   <div class="hint">成绩</div>
   <div class="score"><span id="scoreNum">0</span> <span style="font-size:20px;color:var(--muted)">/ 100</span></div>
   <p id="summary"></p>
-  <div class="hint" style="margin-top:10px">你的成绩码（请完整复制并发送给主持人）</div>
+  <div id="sync" class="sync"></div>
+<div class="hint" style="margin-top:10px">你的成绩码（自动提交失败时，请复制发给主持人）</div>
   <div class="code" id="code"></div>
   <div class="row"><button type="button" class="ghost" id="copy">复制成绩码</button><span class="hint" id="copied"></span></div>
 </section>
 
-<footer>成绩码包含姓名校验与防篡改位，主持人用解码表自动汇总。</footer>
+<footer>交卷后成绩自动汇总到主持人后台；成绩码作为备用凭证。</footer>
 </div>
 
 <script>
@@ -89,6 +91,10 @@ const Q=[
 
 ];
 const SALT="awb-1028-v2";
+const SB_URL="https://jihssvqtklclgsslvpap.supabase.co",SB_KEY="sb_publishable_YPWoWXU9pKsTP13N3_MOZw_knL64NFF";
+const T0=Date.now(),DEV=/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)?(/DingTalk/i.test(navigator.userAgent)?"dingtalk":"mobile"):"desktop";
+function sbPost(t,b){return fetch(SB_URL+"/rest/v1/"+t,{method:"POST",headers:{apikey:SB_KEY,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify(b),keepalive:true})}
+(function(){let v;try{v=localStorage.getItem("awb_vid");if(!v){v=Math.random().toString(36).slice(2,12);localStorage.setItem("awb_vid",v)}}catch(_){v="na"}sbPost("quiz_visits",{visitor_id:v,device:DEV}).catch(()=>{})})();
 const KEYS=["2e4b2bf8","354d7594","a045cf40","3248f3ad","b941796d","a04390a9","303c2494","313e64be","1e378b10","2e39e2d7","ecf306e3","baf07996","b0f7259d","fbf55d17","18e8becb"];
 const ALPH="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_";
 const LET="ABCDEF";
@@ -97,7 +103,8 @@ function render(){const box=document.getElementById("questions");Q.forEach((q,i)
 render();
 function check(ans,score){let s=score;for(let i=0;i<ans.length;i++)s+=(ALPH.indexOf(ans[i])+1)*(i+3);return s%97}
 function nameTag(n){let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))%1000;return String(h).padStart(3,"0")}
-document.getElementById("quiz").addEventListener("submit",e=>{e.preventDefault();const warn=document.getElementById("warn");const name=document.getElementById("name").value.trim();if(!name){warn.textContent="请先填写姓名。";return}const ans=[];for(let i=0;i<Q.length;i++){const picked=[...document.querySelectorAll(`input[name=q${i}]:checked`)];if(!picked.length){warn.textContent=`第 ${i+1} 题尚未作答。`;document.querySelector(`input[name=q${i}]`).closest(".q").scrollIntoView({behavior:"smooth"});return}const mask=picked.reduce((m,r)=>m|(1<<Number(r.value)),0);ans.push(ALPH[mask])}warn.textContent="";let right=0;ans.forEach((a,i)=>{const ok=fnv(SALT+i+a)===KEYS[i];if(ok)right++;const q=document.querySelectorAll(`input[name=q${i}]`)[0].closest(".q");q.querySelectorAll("input").forEach(r=>{r.disabled=true;if(r.checked)r.closest(".opt").classList.add(ok?"right":"wrong")})});document.getElementById("submit").disabled=true;const score=Math.round(right*100/Q.length);const a=ans.join("");const code=`AWB2-${String(score).padStart(3,"0")}-${a}-${String(check(a,score)).padStart(2,"0")}-${nameTag(name)}`;document.getElementById("scoreNum").textContent=score;document.getElementById("summary").textContent=`${name}，答对 ${right} / ${Q.length} 题。绿色为答对，红色为答错；正确答案由主持人统一讲解。`;document.getElementById("code").textContent=code;document.getElementById("result").style.display="block";document.getElementById("result").scrollIntoView({behavior:"smooth"})});
+document.getElementById("quiz").addEventListener("submit",e=>{e.preventDefault();const warn=document.getElementById("warn");const name=document.getElementById("name").value.trim();if(!name){warn.textContent="请先填写姓名。";return}const ans=[];for(let i=0;i<Q.length;i++){const picked=[...document.querySelectorAll(`input[name=q${i}]:checked`)];if(!picked.length){warn.textContent=`第 ${i+1} 题尚未作答。`;document.querySelector(`input[name=q${i}]`).closest(".q").scrollIntoView({behavior:"smooth"});return}const mask=picked.reduce((m,r)=>m|(1<<Number(r.value)),0);ans.push(ALPH[mask])}warn.textContent="";let right=0;ans.forEach((a,i)=>{const ok=fnv(SALT+i+a)===KEYS[i];if(ok)right++;const q=document.querySelectorAll(`input[name=q${i}]`)[0].closest(".q");q.querySelectorAll("input").forEach(r=>{r.disabled=true;if(r.checked)r.closest(".opt").classList.add(ok?"right":"wrong")})});document.getElementById("submit").disabled=true;const score=Math.round(right*100/Q.length);const a=ans.join("");const code=`AWB2-${String(score).padStart(3,"0")}-${a}-${String(check(a,score)).padStart(2,"0")}-${nameTag(name)}`;document.getElementById("scoreNum").textContent=score;document.getElementById("summary").textContent=`${name}，答对 ${right} / ${Q.length} 题。绿色为答对，红色为答错；正确答案由主持人统一讲解。`;document.getElementById("code").textContent=code;document.getElementById("result").style.display="block";document.getElementById("result").scrollIntoView({behavior:"smooth"});upload({name:name.slice(0,20),score,correct:right,answers:a,code,duration_sec:Math.min(86400,Math.round((Date.now()-T0)/1000)),device:DEV,user_agent:navigator.userAgent.slice(0,300)})});
+function upload(row){const st=document.getElementById("sync");st.className="sync";st.textContent="成绩上传中…";let n=0;const go=()=>sbPost("quiz_submissions",row).then(r=>{if(!r.ok)throw 0;st.className="sync ok";st.textContent="✓ 成绩已自动提交给主持人，无需再发成绩码"}).catch(()=>{if(++n<3){setTimeout(go,1500*n)}else{st.className="sync bad";st.innerHTML='自动提交失败，请把下方成绩码复制发到群里 <button type="button" class="ghost" id="retry">重试</button>';document.getElementById("retry").onclick=()=>{n=0;go()}}});go()}
 document.getElementById("copy").addEventListener("click",async()=>{const t=document.getElementById("code").textContent;try{await navigator.clipboard.writeText(t);document.getElementById("copied").textContent="已复制"}catch(_){document.getElementById("copied").textContent="请长按手动复制"}});
 </script>
 </body>
