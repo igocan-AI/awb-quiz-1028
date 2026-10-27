@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>AWB 实战测验｜P4P 促销 · Accio Work · FDE 交付</title>
+<style>
+:root{--navy:#14304a;--teal:#0a8a94;--ink:#1f2d3a;--muted:#5b6b7a;--line:#d6e2e6;--pale:#eef7f6;--orange:#d7792f;--bg:#f3f7f8;--ok:#1a8a5a;--bad:#c2452d}
+*{box-sizing:border-box}
+body{margin:0;font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;background:radial-gradient(circle at 15% 0%,#dcefee 0,transparent 42%),radial-gradient(circle at 100% 100%,#fbe6d4 0,transparent 35%),var(--bg);color:var(--ink);line-height:1.6}
+.wrap{max-width:860px;margin:0 auto;padding:28px 18px 60px}
+header{background:linear-gradient(120deg,var(--navy),#1f5a74 65%,var(--teal));color:#fff;border-radius:18px;padding:30px 28px;box-shadow:0 12px 30px rgba(20,48,74,.18)}
+header h1{margin:0 0 8px;font-size:clamp(22px,4vw,32px);letter-spacing:.5px}
+header p{margin:0;opacity:.9}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.tag{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);padding:4px 12px;border-radius:999px;font-size:13px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px 24px;margin-top:18px;box-shadow:0 4px 16px rgba(20,48,74,.06)}
+label.field{display:block;font-weight:600;margin-bottom:6px}
+input[type=text]{width:100%;padding:12px 14px;font-size:16px;border:1px solid var(--line);border-radius:10px}
+.q{border-top:1px solid var(--line);padding:18px 0 6px}
+.q:first-of-type{border-top:0}
+.q .num{display:inline-block;background:var(--pale);color:var(--teal);font-weight:700;border-radius:8px;padding:2px 10px;font-size:13px;margin-bottom:8px}
+.q h3{margin:6px 0 10px;font-size:17px;font-weight:600}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;cursor:pointer;transition:.15s}
+.opt:hover{border-color:var(--teal);background:#f7fbfb}
+.opt input{margin-top:5px}
+.opt.right{border-color:var(--ok);background:#eef9f3}
+.opt.wrong{border-color:var(--bad);background:#fdf1ee}
+button{appearance:none;border:0;border-radius:12px;padding:14px 26px;font-size:17px;font-weight:700;color:#fff;background:linear-gradient(90deg,var(--teal),var(--navy));cursor:pointer;box-shadow:0 8px 20px rgba(10,138,148,.3)}
+button:disabled{opacity:.55;cursor:not-allowed;box-shadow:none}
+.hint{color:var(--muted);font-size:14px}
+.warn{color:var(--bad);font-weight:600;margin-top:10px;min-height:22px}
+#result{display:none}
+.score{font-size:44px;font-weight:800;color:var(--navy);margin:4px 0}
+.code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:18px;letter-spacing:1px;background:#0f2436;color:#c8f3f1;padding:14px 16px;border-radius:12px;word-break:break-all;user-select:all}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.ghost{background:#fff;color:var(--navy);border:1px solid var(--line);box-shadow:none}
+footer{margin-top:26px;text-align:center;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>AWB 实战测验</h1>
+  <p>10 道单选题，每题 10 分，满分 100 分。覆盖 11 月 P4P 促销、Accio Work 核心能力、FDE 交付。</p>
+  <div class="tags"><span class="tag">P4P 促销 · 3 题</span><span class="tag">Accio Work · 5 题</span><span class="tag">FDE 交付 · 2 题</span><span class="tag">提交后即时判分</span></div>
+</header>
+
+<form id="quiz" class="card" autocomplete="off">
+  <label class="field" for="name">姓名（必填，将写入成绩码）</label>
+  <input type="text" id="name" maxlength="20" placeholder="请输入真实姓名">
+  <p class="hint">选项顺序每人随机；提交后请把成绩码复制发到指定群。</p>
+  <div id="questions"></div>
+  <div class="warn" id="warn"></div>
+  <div class="row"><button type="submit" id="submit">提交并查看成绩</button></div>
+</form>
+
+<section id="result" class="card">
+  <div class="hint">成绩</div>
+  <div class="score"><span id="scoreNum">0</span> <span style="font-size:20px;color:var(--muted)">/ 100</span></div>
+  <p id="summary"></p>
+  <div class="hint" style="margin-top:10px">你的成绩码（请完整复制并发送给主持人）</div>
+  <div class="code" id="code"></div>
+  <div class="row"><button type="button" class="ghost" id="copy">复制成绩码</button><span class="hint" id="copied"></span></div>
+</section>
+
+<footer>成绩码包含姓名校验与防篡改位，主持人用解码表自动汇总。</footer>
+</div>
+
+<script>
+const Q=[
+{t:"在材料所述的 2026 年 11 月常规充值促销中，客户充值 50,000 元，对应哪项权益？",o:["返 1,000 元，另送 20 张“300-50”搜索通用卡券","返 2,500 元，另送 25 张“500-100”搜索通用卡券","返 6,000 元，另送 20 张“1000-300”搜索通用卡券","只送 3 个月时间地域定投功能"]},
+{t:"“11 月超级充值 MAX”的无余额客户召回对象，需同时满足哪两个条件？",o:["首次充值超过 120 天，且账户余额为 0 的天数超过 15 天","首次充值超过 15 天，且账户余额为 0 的天数超过 120 天","账户余额大于 0，但超过 30 天没有消耗","当月新签且首次充值不足 15 天"]},
+{t:"某客户账户仍有余额，但超过 30 天没有消耗。按材料描述，最匹配哪项 11 月专项活动？",o:["无余额客户的“超级充值 MAX”","当月新签客户专享的常规续充促销","有余额无消耗客户的“无忧推广 MAX”","福袋节秒杀活动（不区分客户状态）"]},
+{t:"材料如何定位 Accio Work 与只做单点问答的个人 AI 助理之间的主要区别？",o:["只回答问题，不参与业务任务","仅用于制作文档，不覆盖经营环节","只能由技术人员通过代码调用","面向电商经营，Agent 可调工具、执行复杂任务并交付结果"]},
+{t:"商家想让 AI 根据买家需求制作商品主图、详情页和 Banner，材料对应的是哪类能力？",o:["AI 美工设计与图片编辑","客户流失预警","广告投放效果诊断","企业积分池分配"]},
+{t:"关于广告诊断能力，材料明确描述的正确做法是什么？",o:["只统计广告花费，不分析转化","从点击、转化、客单价等维度诊断广告效果，并给出可执行的投放建议","不需要店铺和商品数据，就承诺固定投产比","直接代替商家决定所有广告预算，无需确认"]},
+{t:"材料所述的 AI 业务员/客户运营场景，下列哪项表述正确？",o:["只能在工作日白天处理询盘，无法设置转人工条件","只负责绘制商品图片，不参与客户接待","可支持全天候接待，并由商家设定接待范围、话术和转人工条件","必须取消人工辅助，完全交由 AI 独立处理"]},
+{t:"Accio Work 企业版所说“从散装 AI 到集体大脑”，最符合材料的具体做法是什么？",o:["把经验封装为智能体/Skills 在团队共享，并沉淀企业知识与组织记忆","将所有成员的经验保留在各自的私人聊天记录中，不做共享","只新增个人模型配额，不建立团队协作机制","停止收集企业业务知识，完全依赖外部通用问答"]},
+{t:"按材料中的 30 天 FDE 交付旅程，以下哪项阶段顺序正确？",o:["先上线培训 → 再初评价值 → 最后建设知识库 → 结项","先判断价值 → 构建能力 → 上线用好 → 持续运营","先投放广告 → 直接收取订单 → 再建立客户画像 → 停止运营","第 0 天交付全部智能体，第 1 天开始售后，不再做测评"]},
+{t:"在 FDE 材料中，关于 AI 专员从建设到部署的流程，哪项正确？",o:["第 1 天未经需求访谈就统一部署所有账号","先现场安装，第 20 天才首次创建智能体","AI 专员只需生成演示视频，无需测评或培训","按确认方案创建并测评 AI 专员，达到可交付标准后再部署并开展业务使用培训"]}
+];
+const SALT="awb-1028";
+const KEYS=["9dfb1b45","f6f7d5c9","ccf55514","a5f2d918","02f12ce8","dbeeb0ec","b4ec34f0","92e9c0d3","ce0eee8d","aa0c774a"];
+function fnv(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0}return h.toString(16).padStart(8,"0")}
+const LET="ABCD";
+let order=[];
+function render(){const box=document.getElementById("questions");Q.forEach((q,i)=>{const idx=[0,1,2,3].sort(()=>Math.random()-.5);order.push(idx);const d=document.createElement("div");d.className="q";d.innerHTML=`<span class="num">第 ${i+1} 题</span><h3>${q.t}</h3>`+idx.map((oi,k)=>`<label class="opt"><input type="radio" name="q${i}" value="${LET[oi]}"><span><b>${LET[k]}.</b> ${q.o[oi]}</span></label>`).join("");box.appendChild(d)})}
+render();
+function check(ans,score){let s=score;for(let i=0;i<10;i++)s+=(ans.charCodeAt(i)-64)*(i+3);return s%97}
+function nameTag(n){let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))%1000;return String(h).padStart(3,"0")}
+document.getElementById("quiz").addEventListener("submit",e=>{e.preventDefault();const warn=document.getElementById("warn");const name=document.getElementById("name").value.trim();if(!name){warn.textContent="请先填写姓名。";return}const ans=[];for(let i=0;i<10;i++){const c=document.querySelector(`input[name=q${i}]:checked`);if(!c){warn.textContent=`第 ${i+1} 题尚未作答。`;document.querySelector(`input[name=q${i}]`).closest(".q").scrollIntoView({behavior:"smooth"});return}ans.push(c.value)}warn.textContent="";let score=0;ans.forEach((a,i)=>{const ok=fnv(SALT+i+a)===KEYS[i];if(ok)score+=10;document.querySelectorAll(`input[name=q${i}]`).forEach(r=>{r.disabled=true;if(r.checked)r.closest(".opt").classList.add(ok?"right":"wrong")})});document.getElementById("submit").disabled=true;const a=ans.join("");const code=`AWB-${String(score).padStart(3,"0")}-${a}-${String(check(a,score)).padStart(2,"0")}-${nameTag(name)}`;document.getElementById("scoreNum").textContent=score;document.getElementById("summary").textContent=`${name}，答对 ${score/10} 题。绿色为答对，红色为答错；正确答案由主持人统一讲解。`;document.getElementById("code").textContent=code;document.getElementById("result").style.display="block";document.getElementById("result").scrollIntoView({behavior:"smooth"})});
+document.getElementById("copy").addEventListener("click",async()=>{const t=document.getElementById("code").textContent;try{await navigator.clipboard.writeText(t);document.getElementById("copied").textContent="已复制"}catch(_){document.getElementById("copied").textContent="请长按手动复制"}});
+</script>
+</body>
+</html>
